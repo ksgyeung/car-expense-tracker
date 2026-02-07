@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  car-expense-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: car-expense-tracker
+    ports:
+      - "3000:3000"
+    environment:
+      # Application Password
+      - APP_PASSWORD=${APP_PASSWORD:-123}
+      
+      # JWT Configuration
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-this-in-production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
+      
+      # Base Path Configuration (optional)
+      # Uncomment and set if deploying under a subpath (e.g., /car-tracker)
+      # - NEXT_PUBLIC_BASE_PATH=${NEXT_PUBLIC_BASE_PATH:-}
+      
+      # Database Configuration
+      - DB_PATH=/app/data/car-expense-tracker.db
+      
+      # Node Environment
+      - NODE_ENV=production
+    volumes:
+      # Persist database data
+      - car-expense-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  car-expense-data:
+    driver: local
