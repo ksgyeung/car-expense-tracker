@@ -30,8 +30,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Create a non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 50000 app
+RUN adduser --system --uid 50000 app
 
 # Copy necessary files from builder
 COPY --from=builder /app/public ./public
@@ -39,10 +39,10 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 # Create directory for SQLite database with proper permissions
-RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
+RUN mkdir -p /app/data && chown -R app:app /app/data
 
 # Switch to non-root user
-USER nextjs
+USER app
 
 # Expose the port the app runs on
 EXPOSE 3000
