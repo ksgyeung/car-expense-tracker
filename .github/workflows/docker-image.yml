@@ -13,4 +13,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag car-expense-tracker:$(date +%Y%m%d%H%M%S)
+      run: docker build . --file Dockerfile --tag car-expense-tracker:latest
+    - name: Save image to tar
+      run: docker save car-expense-tracker:latest | zstdmt > car-expense-tracker.tar.zst
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-image
+        path: car-expense-tracker.tar.zst
