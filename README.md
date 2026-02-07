@@ -14,12 +14,13 @@ A full-stack web application for tracking vehicle expenses, fuel refills, and tr
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14+ with React, TypeScript, Bootstrap 5
+- **Frontend**: Next.js 15+ with React 19, TypeScript, Bootstrap 5
 - **Backend**: Next.js API Routes
 - **Database**: SQLite3 with better-sqlite3 driver
 - **Charts**: Chart.js with react-chartjs-2
 - **Testing**: Jest with React Testing Library
-- **Authentication**: Session-based with environment variable password
+- **Authentication**: JWT-based with session management
+- **Deployment**: Docker support with configurable base path
 
 ## Getting Started
 
@@ -48,23 +49,29 @@ pnpm install
 
 3. Configure environment variables:
 
-Create a `.env.local` file in the project root with the following variables:
+Create a `.env.local` file in the project root:
 
 ```env
 # Application Password for Authentication
 APP_PASSWORD=your-secure-password-here
 
+# JWT Configuration
+JWT_SECRET=your-very-secure-random-secret-key
+JWT_EXPIRES_IN=24h
+
 # Database Configuration
-# Path to the SQLite database file (relative to project root or absolute path)
 DB_PATH=car-expense-tracker.db
+
+# Optional: Base Path for Subpath Deployment
+# NEXT_PUBLIC_BASE_PATH=/car-tracker
 ```
 
 **Environment Variables:**
-- `APP_PASSWORD` - The password required to access the application
-- `DB_PATH` - Path to the SQLite database file. Can be:
-  - Relative path (e.g., `car-expense-tracker.db` - stored in project root)
-  - Absolute path (e.g., `/var/data/car-tracker.db`)
-  - Defaults to `car-expense-tracker.db` in project root if not specified
+- `APP_PASSWORD` - Password required to access the application (required)
+- `JWT_SECRET` - Secret key for JWT token signing (required)
+- `JWT_EXPIRES_IN` - JWT token expiration time (default: 24h)
+- `DB_PATH` - Path to SQLite database file (default: `car-expense-tracker.db`)
+- `NEXT_PUBLIC_BASE_PATH` - Base path for subpath deployment (optional, see [BASE_PATH.md](BASE_PATH.md))
 
 ### Running the Application
 
@@ -89,25 +96,72 @@ npm run build
 npm start
 ```
 
+## Docker Deployment
+
+The application includes full Docker support for easy deployment.
+
+### Quick Start with Docker Compose
+
+```bash
+# Create environment file
+cp .env.example .env
+
+# Edit .env with your configuration
+# Then start the application
+docker-compose up -d
+```
+
+Access the application at `http://localhost:3000`
+
+### Docker Environment Variables
+
+All standard environment variables are supported, plus:
+- `NEXT_PUBLIC_BASE_PATH` - Deploy under a subpath (e.g., `/car-tracker`)
+
+### Data Persistence
+
+The SQLite database is stored in a Docker volume (`car-expense-data`) for persistence across container restarts.
+
+For detailed Docker deployment instructions, including:
+- Manual Docker build and run
+- Production deployment best practices
+- Reverse proxy configuration (nginx, Traefik, Apache)
+- Database backup and restore
+- Subpath deployment
+
+See the complete [Docker Deployment Guide](DOCKER.md)
+
+### Deploying Under a Subpath
+
+To deploy the application under a subpath (e.g., `https://example.com/car-tracker`):
+
+1. Set `NEXT_PUBLIC_BASE_PATH=/car-tracker` in your `.env` file
+2. Rebuild the application
+3. Configure your reverse proxy
+
+See [BASE_PATH.md](BASE_PATH.md) for detailed configuration instructions.
+
 ## Running Tests
 
-Run the test suite:
+The project includes comprehensive test coverage with Jest and React Testing Library.
 
 ```bash
+# Run all tests
 npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
 ```
 
-Run tests in watch mode:
-
-```bash
-npm test -- --watch
-```
-
-Run tests with coverage:
-
-```bash
-npm test -- --coverage
-```
+Test coverage includes:
+- API route handlers
+- React components
+- Service layer logic
+- Authentication middleware
+- Database operations
 
 ## Project Structure
 
@@ -193,12 +247,20 @@ This project uses:
 ### Key Commands
 
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm start            # Start production server
-npm test             # Run tests
-npm run lint         # Run ESLint
+npm run dev              # Start development server
+npm run build            # Build for production
+npm start                # Start production server
+npm test                 # Run tests once
+npm run test:watch       # Run tests in watch mode
+npm run test:coverage    # Run tests with coverage
+npm run lint             # Run ESLint
 ```
+
+## Additional Documentation
+
+- [Docker Deployment Guide](DOCKER.md) - Complete Docker deployment instructions
+- [Base Path Configuration](BASE_PATH.md) - Deploy under a subpath with reverse proxy
+- [Component Documentation](src/components/README.md) - Component usage and props
 
 ## License
 
