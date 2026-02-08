@@ -32,6 +32,9 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
   // Form state
   const [amountSpent, setAmountSpent] = useState(refill?.amountSpent?.toString() || '');
   const [distanceTraveled, setDistanceTraveled] = useState(refill?.distanceTraveled?.toString() || '');
+  // New: allow entering two odometer readings to compute distance automatically
+  const [startOdometer, setStartOdometer] = useState('');
+  const [endOdometer, setEndOdometer] = useState('');
   const [date, setDate] = useState(
     refill?.date ? refill.date.split('T')[0] : new Date().toISOString().split('T')[0]
   );
@@ -61,15 +64,35 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
       }
     }
 
-    // Validate distance traveled
-    if (!distanceTraveled.trim()) {
-      errors.distanceTraveled = 'Distance traveled is required';
+    // Validate distance: either raw distance or both odometer readings must be provided
+    const startTrim = startOdometer.trim();
+    const endTrim = endOdometer.trim();
+    const distanceTrim = distanceTraveled.trim();
+
+    if (startTrim || endTrim) {
+      // If either odometer input used, require both
+      if (!startTrim || !endTrim) {
+        errors.distanceTraveled = 'Both start and end odometer readings are required to calculate distance';
+      } else {
+        const s = parseFloat(startTrim);
+        const e = parseFloat(endTrim);
+        if (isNaN(s) || isNaN(e)) {
+          errors.distanceTraveled = 'Odometer readings must be valid numbers';
+        } else if (e <= s) {
+          errors.distanceTraveled = 'End odometer must be greater than start odometer';
+        }
+      }
     } else {
-      const distanceNum = parseFloat(distanceTraveled);
-      if (isNaN(distanceNum)) {
-        errors.distanceTraveled = 'Distance must be a valid number';
-      } else if (distanceNum <= 0) {
-        errors.distanceTraveled = 'Distance must be a positive number';
+      // Fallback to direct distance input
+      if (!distanceTrim) {
+        errors.distanceTraveled = 'Distance traveled is required';
+      } else {
+        const distanceNum = parseFloat(distanceTrim);
+        if (isNaN(distanceNum)) {
+          errors.distanceTraveled = 'Distance must be a valid number';
+        } else if (distanceNum <= 0) {
+          errors.distanceTraveled = 'Distance must be a positive number';
+        }
       }
     }
 
@@ -103,9 +126,21 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
     setIsLoading(true);
 
     try {
+      // Compute final distance: prefer odometer calculation if provided
+      let finalDistance = parseFloat(distanceTraveled || '0');
+      const sTrim = startOdometer.trim();
+      const eTrim = endOdometer.trim();
+      if (sTrim && eTrim) {
+        const s = parseFloat(sTrim);
+        const e = parseFloat(eTrim);
+        if (!isNaN(s) && !isNaN(e)) {
+          finalDistance = e - s;
+        }
+      }
+
       const refillData = {
         amountSpent: parseFloat(amountSpent),
-        distanceTraveled: parseFloat(distanceTraveled),
+        distanceTraveled: finalDistance,
         date: new Date(date).toISOString(),
         notes: notes.trim() || undefined,
       };
@@ -128,6 +163,8 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
         if (!refill) {
           setAmountSpent('');
           setDistanceTraveled('');
+          setStartOdometer('');
+          setEndOdometer('');
           setDate(new Date().toISOString().split('T')[0]);
           setNotes('');
         }
@@ -206,11 +243,51 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
             </div>
           </div>
 
-          {/* Distance Traveled Field */}
+          {/* Distance Traveled Field (either direct distance OR start/end odometer readings) */}
           <div className="mb-3">
-            <label htmlFor="refill-distance" className="form-label">
+            <label className="form-label">
               Distance Traveled <span className="text-danger">*</span>
             </label>
+
+            {/* Odometer inputs - prefer these if provided */}
+            <div className="row g-2 mb-2">
+              <div className="col">
+                <div className="input-group">
+                  <span className="input-group-text">End</span>
+                  <input
+                    type="number"
+                    className={`form-control ${validationErrors.distanceTraveled ? 'is-invalid' : ''}`}
+                    id="refill-end-odometer"
+                    value={endOdometer}
+                    onChange={(e) => setEndOdometer(e.target.value)}
+                    placeholder="0"
+                    step="0.1"
+                    min="0"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              <div className="col">
+                <div className="input-group">
+                  <span className="input-group-text">Start</span>
+                  <input
+                    type="number"
+                    className={`form-control ${validationErrors.distanceTraveled ? 'is-invalid' : ''}`}
+                    id="refill-start-odometer"
+                    value={startOdometer}
+                    onChange={(e) => setStartOdometer(e.target.value)}
+                    placeholder="0"
+                    step="0.1"
+                    min="0"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center text-muted mb-2">— OR —</div>
+
+            {/* Direct distance input (fallback) */}
             <div className="input-group">
               <input
                 type="number"
@@ -222,15 +299,16 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
                 step="0.1"
                 min="0.1"
                 disabled={isLoading}
-                required
               />
               <span className="input-group-text">km</span>
-              {validationErrors.distanceTraveled && (
-                <div className="invalid-feedback">{validationErrors.distanceTraveled}</div>
-              )}
             </div>
+
+            {validationErrors.distanceTraveled && (
+              <div className="invalid-feedback d-block">{validationErrors.distanceTraveled}</div>
+            )}
+
             <div className="form-text">
-              Enter kilometers traveled since last refill (or starting odometer for first entry)
+              Either enter kilometers traveled directly, or provide start and end odometer readings to calculate distance automatically.
             </div>
           </div>
 
