@@ -30,6 +30,9 @@ interface TripFormProps {
 export default function TripForm({ trip, onSuccess, onCancel }: TripFormProps) {
   // Form state
   const [distance, setDistance] = useState(trip?.distance?.toString() || '');
+  // allow entering start/end odometer to calculate distance
+  const [startOdometer, setStartOdometer] = useState('');
+  const [endOdometer, setEndOdometer] = useState('');
   const [date, setDate] = useState(
     trip?.date ? trip.date.split('T')[0] : new Date().toISOString().split('T')[0]
   );
@@ -48,15 +51,33 @@ export default function TripForm({ trip, onSuccess, onCancel }: TripFormProps) {
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
-    // Validate distance
-    if (!distance.trim()) {
-      errors.distance = 'Distance is required';
+    // Validate distance: either provide distance OR both odometer readings
+    const sTrim = startOdometer.trim();
+    const eTrim = endOdometer.trim();
+    const distanceTrim = distance.trim();
+
+    if (sTrim || eTrim) {
+      if (!sTrim || !eTrim) {
+        errors.distance = 'Both start and end odometer readings are required to calculate distance';
+      } else {
+        const s = parseFloat(sTrim);
+        const e = parseFloat(eTrim);
+        if (isNaN(s) || isNaN(e)) {
+          errors.distance = 'Odometer readings must be valid numbers';
+        } else if (e <= s) {
+          errors.distance = 'End odometer must be greater than start odometer';
+        }
+      }
     } else {
-      const distanceNum = parseFloat(distance);
-      if (isNaN(distanceNum)) {
-        errors.distance = 'Distance must be a valid number';
-      } else if (distanceNum <= 0) {
-        errors.distance = 'Distance must be a positive number';
+      if (!distanceTrim) {
+        errors.distance = 'Distance is required';
+      } else {
+        const distanceNum = parseFloat(distanceTrim);
+        if (isNaN(distanceNum)) {
+          errors.distance = 'Distance must be a valid number';
+        } else if (distanceNum <= 0) {
+          errors.distance = 'Distance must be a positive number';
+        }
       }
     }
 
@@ -90,8 +111,20 @@ export default function TripForm({ trip, onSuccess, onCancel }: TripFormProps) {
     setIsLoading(true);
 
     try {
+      // compute final distance, prefer odometer calculation
+      let finalDistance = parseFloat(distance || '0');
+      const sTrim = startOdometer.trim();
+      const eTrim = endOdometer.trim();
+      if (sTrim && eTrim) {
+        const s = parseFloat(sTrim);
+        const e = parseFloat(eTrim);
+        if (!isNaN(s) && !isNaN(e)) {
+          finalDistance = e - s;
+        }
+      }
+
       const tripData = {
-        distance: parseFloat(distance),
+        distance: finalDistance,
         date: new Date(date).toISOString(),
         purpose: purpose.trim() || undefined,
         notes: notes.trim() || undefined,
@@ -114,6 +147,8 @@ export default function TripForm({ trip, onSuccess, onCancel }: TripFormProps) {
         // Success - reset form if creating, call success callback
         if (!trip) {
           setDistance('');
+          setStartOdometer('');
+          setEndOdometer('');
           setDate(new Date().toISOString().split('T')[0]);
           setPurpose('');
           setNotes('');
@@ -170,6 +205,45 @@ export default function TripForm({ trip, onSuccess, onCancel }: TripFormProps) {
             <label htmlFor="trip-distance" className="form-label">
               Distance <span className="text-danger">*</span>
             </label>
+            {/* Odometer inputs (End then Start) */}
+            <div className="row g-2 mb-2">
+              <div className="col">
+                <div className="input-group">
+                  <span className="input-group-text">End</span>
+                  <input
+                    type="number"
+                    className={`form-control ${validationErrors.distance ? 'is-invalid' : ''}`}
+                    id="trip-end-odometer"
+                    value={endOdometer}
+                    onChange={(e) => setEndOdometer(e.target.value)}
+                    placeholder="0"
+                    step="0.1"
+                    min="0"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              <div className="col">
+                <div className="input-group">
+                  <span className="input-group-text">Start</span>
+                  <input
+                    type="number"
+                    className={`form-control ${validationErrors.distance ? 'is-invalid' : ''}`}
+                    id="trip-start-odometer"
+                    value={startOdometer}
+                    onChange={(e) => setStartOdometer(e.target.value)}
+                    placeholder="0"
+                    step="0.1"
+                    min="0"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center text-muted mb-2">— OR —</div>
+
+            {/* Direct distance input (fallback) */}
             <div className="input-group">
               <input
                 type="number"
@@ -181,15 +255,16 @@ export default function TripForm({ trip, onSuccess, onCancel }: TripFormProps) {
                 step="0.1"
                 min="0.1"
                 disabled={isLoading}
-                required
               />
               <span className="input-group-text">km</span>
-              {validationErrors.distance && (
-                <div className="invalid-feedback">{validationErrors.distance}</div>
-              )}
             </div>
+
+            {validationErrors.distance && (
+              <div className="invalid-feedback d-block">{validationErrors.distance}</div>
+            )}
+
             <div className="form-text">
-              Enter the distance traveled for this trip
+              Either enter the distance directly, or provide start and end odometer readings to calculate distance automatically.
             </div>
           </div>
 
