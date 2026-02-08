@@ -47,6 +47,7 @@ function initializeSchema(): void {
     CREATE TABLE IF NOT EXISTS refills (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       amount_spent REAL NOT NULL CHECK(amount_spent > 0),
+      liters REAL CHECK(liters > 0),
       distance_traveled REAL NOT NULL CHECK(distance_traveled > 0),
       date TEXT NOT NULL,
       notes TEXT,

@@ -14,6 +14,7 @@ export interface Refill {
   id: number;
   amountSpent: number;
   distanceTraveled: number;
+  liters?: number;
   date: string;
   notes?: string;
   efficiency?: number;

@@ -29,9 +29,9 @@ const mockDeleteRefill = deleteRefill as jest.MockedFunction<typeof deleteRefill
 const mockValidateSession = validateSession as jest.MockedFunction<typeof validateSession>;
 
 // Helper to create a mock request with session cookie
-function createMockRequest(url: string, options: RequestInit = {}): NextRequest {
+function createMockRequest(url: string, options: any = {}): NextRequest {
   const fullUrl = url.startsWith('http') ? url : `http://localhost:3000${url}`;
-  const req = new NextRequest(fullUrl, options);
+  const req = new NextRequest(fullUrl, options as any);
   req.cookies.set('sessionId', 'test-session-id');
   return req;
 }

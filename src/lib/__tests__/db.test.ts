@@ -20,7 +20,7 @@ describe('Database Initialization', () => {
 
   test('should create expenses table with correct schema', () => {
     const db = getDatabase();
-    const tableInfo = db.pragma('table_info(expenses)');
+    const tableInfo = db.pragma('table_info(expenses)') as any;
     
     const columnNames = tableInfo.map((col: any) => col.name);
     expect(columnNames).toContain('id');
@@ -34,7 +34,7 @@ describe('Database Initialization', () => {
 
   test('should create refills table with correct schema', () => {
     const db = getDatabase();
-    const tableInfo = db.pragma('table_info(refills)');
+    const tableInfo = db.pragma('table_info(refills)') as any;
     
     const columnNames = tableInfo.map((col: any) => col.name);
     expect(columnNames).toContain('id');
@@ -49,7 +49,7 @@ describe('Database Initialization', () => {
 
   test('should create trips table with correct schema', () => {
     const db = getDatabase();
-    const tableInfo = db.pragma('table_info(trips)');
+    const tableInfo = db.pragma('table_info(trips)') as any;
     
     const columnNames = tableInfo.map((col: any) => col.name);
     expect(columnNames).toContain('id');
@@ -63,7 +63,7 @@ describe('Database Initialization', () => {
 
   test('should create sessions table with correct schema', () => {
     const db = getDatabase();
-    const tableInfo = db.pragma('table_info(sessions)');
+    const tableInfo = db.pragma('table_info(sessions)') as any;
     
     const columnNames = tableInfo.map((col: any) => col.name);
     expect(columnNames).toContain('id');
@@ -74,7 +74,7 @@ describe('Database Initialization', () => {
 
   test('should create indexes for date columns', () => {
     const db = getDatabase();
-    const indexes = db.pragma('index_list(expenses)');
+    const indexes = db.pragma('index_list(expenses)') as any;
     
     const indexNames = indexes.map((idx: any) => idx.name);
     expect(indexNames).toContain('idx_expenses_date');
@@ -82,7 +82,7 @@ describe('Database Initialization', () => {
 
   test('should create index for session expiration', () => {
     const db = getDatabase();
-    const indexes = db.pragma('index_list(sessions)');
+    const indexes = db.pragma('index_list(sessions)') as any;
     
     const indexNames = indexes.map((idx: any) => idx.name);
     expect(indexNames).toContain('idx_sessions_expires');

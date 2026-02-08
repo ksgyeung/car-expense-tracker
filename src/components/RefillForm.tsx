@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 
 import { useState, FormEvent } from 'react';
 import { Refill } from '../lib/types';
@@ -32,6 +32,7 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
   // Form state
   const [amountSpent, setAmountSpent] = useState(refill?.amountSpent?.toString() || '');
   const [distanceTraveled, setDistanceTraveled] = useState(refill?.distanceTraveled?.toString() || '');
+  const [liters, setLiters] = useState(refill?.liters?.toString() || '');
   // New: allow entering two odometer readings to compute distance automatically
   const [startOdometer, setStartOdometer] = useState('');
   const [endOdometer, setEndOdometer] = useState('');
@@ -106,6 +107,17 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
       }
     }
 
+    // Validate liters if provided
+    const litersTrim = liters.trim();
+    if (litersTrim) {
+      const litersNum = parseFloat(litersTrim);
+      if (isNaN(litersNum)) {
+        errors.liters = 'Liters must be a valid number';
+      } else if (litersNum <= 0) {
+        errors.liters = 'Liters must be a positive number';
+      }
+    }
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -140,6 +152,7 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
 
       const refillData = {
         amountSpent: parseFloat(amountSpent),
+        liters: liters.trim() ? parseFloat(liters) : undefined,
         distanceTraveled: finalDistance,
         date: new Date(date).toISOString(),
         notes: notes.trim() || undefined,
@@ -163,6 +176,7 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
         if (!refill) {
           setAmountSpent('');
           setDistanceTraveled('');
+          setLiters('');
           setStartOdometer('');
           setEndOdometer('');
           setDate(new Date().toISOString().split('T')[0]);
@@ -213,6 +227,8 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
           </div>
         )}
 
+        
+
         {/* Refill Form - Requirements 3.1, 7.2 */}
         <form onSubmit={handleSubmit} noValidate>
           {/* Amount Spent Field */}
@@ -242,6 +258,31 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
               Enter the total cost of fuel purchased
             </div>
           </div>
+
+            {/* Liters Field (Optional) */}
+            <div className="mb-3">
+              <label htmlFor="refill-liters" className="form-label">
+                Liters <span className="text-muted">(L)</span>
+              </label>
+              <div className="input-group">
+                <input
+                  type="number"
+                  className={`form-control ${validationErrors.liters ? 'is-invalid' : ''}`}
+                  id="refill-liters"
+                  value={liters}
+                  onChange={(e) => setLiters(e.target.value)}
+                  placeholder="0.0"
+                  step="0.01"
+                  min="0.01"
+                  disabled={isLoading}
+                />
+                <span className="input-group-text">L</span>
+                {validationErrors.liters && (
+                  <div className="invalid-feedback d-block">{validationErrors.liters}</div>
+                )}
+              </div>
+              <div className="form-text">Optional: enter the volume of fuel added in liters.</div>
+            </div>
 
           {/* Distance Traveled Field (either direct distance OR start/end odometer readings) */}
           <div className="mb-3">

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   
   try {
     const body = await request.json();
-    const { amountSpent, distanceTraveled, date, notes } = body;
+    const { amountSpent, distanceTraveled, date, notes, liters } = body;
 
     // Validate required fields
     if (amountSpent === undefined || amountSpent === null) {
@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
     // Create refill (service layer handles additional validation and efficiency calculation)
     const refill = createRefill({
       amountSpent,
+      liters,
       distanceTraveled,
       date,
       notes,

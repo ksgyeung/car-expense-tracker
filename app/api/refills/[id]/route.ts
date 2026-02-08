@@ -32,7 +32,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { amountSpent, distanceTraveled, date, notes } = body;
+    const { amountSpent, distanceTraveled, date, notes, liters } = body;
 
     // Build updates object with only provided fields
     const updates: any = {};
@@ -51,6 +51,9 @@ export async function PUT(
     
     if (notes !== undefined) {
       updates.notes = notes;
+    }
+    if (liters !== undefined) {
+      updates.liters = liters;
     }
 
     // Update refill (service layer handles validation and efficiency recalculation)

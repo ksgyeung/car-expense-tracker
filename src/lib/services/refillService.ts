@@ -31,6 +31,13 @@ export function createRefill(
   if (typeof refill.distanceTraveled !== 'number' || refill.distanceTraveled <= 0) {
     throw new Error('Distance must be a positive number');
   }
+
+  // Validate liters if provided
+  if (refill.liters !== undefined) {
+    if (typeof refill.liters !== 'number' || refill.liters <= 0) {
+      throw new Error('Liters must be a positive number');
+    }
+  }
   
   if (!refill.date) {
     throw new Error('Required field missing: date');
@@ -49,12 +56,13 @@ export function createRefill(
   const now = new Date().toISOString();
   
   const stmt = db.prepare(`
-    INSERT INTO refills (amount_spent, distance_traveled, date, notes, efficiency, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO refills (amount_spent, liters, distance_traveled, date, notes, efficiency, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
   
   const result = stmt.run(
     refill.amountSpent,
+    refill.liters ?? null,
     refill.distanceTraveled,
     refill.date,
     refill.notes || null,
@@ -128,6 +136,12 @@ export function updateRefill(
       throw new Error('Distance must be a positive number');
     }
   }
+
+  if (updates.liters !== undefined) {
+    if (typeof updates.liters !== 'number' || updates.liters <= 0) {
+      throw new Error('Liters must be a positive number');
+    }
+  }
   
   if (updates.date !== undefined) {
     const dateObj = new Date(updates.date);
@@ -173,6 +187,11 @@ export function updateRefill(
   if (updates.notes !== undefined) {
     fields.push('notes = ?');
     values.push(updates.notes || null);
+  }
+
+  if (updates.liters !== undefined) {
+    fields.push('liters = ?');
+    values.push(updates.liters ?? null);
   }
   
   // Always update efficiency and updated_at
@@ -224,6 +243,7 @@ function mapRowToRefill(row: any): Refill {
   return {
     id: row.id,
     amountSpent: row.amount_spent,
+    liters: row.liters || undefined,
     distanceTraveled: row.distance_traveled,
     date: row.date,
     notes: row.notes || undefined,
