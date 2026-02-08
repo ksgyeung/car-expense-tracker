@@ -49,6 +49,15 @@ const COMMON_EXPENSE_TYPES = [
   'Other',
 ];
 
+// Render the common types sorted alphabetically, but keep 'Other' as the last option
+const SORTED_EXPENSE_TYPES = (() => {
+  const types = [...COMMON_EXPENSE_TYPES];
+  const otherIndex = types.indexOf('Other');
+  const hasOther = otherIndex !== -1;
+  if (hasOther) types.splice(otherIndex, 1);
+  return types.sort((a, b) => a.localeCompare(b)).concat(hasOther ? ['Other'] : []);
+})();
+
 export default function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) {
   // Determine if the expense has a custom type (not in the common list)
   const isCustomType = expense?.type && !COMMON_EXPENSE_TYPES.includes(expense.type);
@@ -234,7 +243,7 @@ export default function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFor
                   required
                 >
                   <option value="">Select expense type...</option>
-                  {COMMON_EXPENSE_TYPES.map((expenseType) => (
+                  {SORTED_EXPENSE_TYPES.map((expenseType) => (
                     <option key={expenseType} value={expenseType}>
                       {expenseType}
                     </option>
