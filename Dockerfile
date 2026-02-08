@@ -33,10 +33,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 50000 app
 RUN adduser --system --uid 50000 app
 
-# Copy necessary files from builder
+# Copy necessary files from builder/deps
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/.next ./.next
 
 # Create directory for SQLite database with proper permissions
 RUN mkdir -p /app/data && chown -R app:app /app/data
@@ -51,4 +52,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Start the application
-CMD ["node", "server.js"]
+CMD ["npm", "run", "start"]
