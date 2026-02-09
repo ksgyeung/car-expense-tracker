@@ -8,7 +8,6 @@ import RefillForm from '../../src/components/RefillForm';
 import RefillList from '../../src/components/RefillList';
 import TripForm from '../../src/components/TripForm';
 import TripList from '../../src/components/TripList';
-import MileageChart from '../../src/components/MileageChart';
 
 /**
  * Dashboard Client Component
@@ -23,13 +22,13 @@ import MileageChart from '../../src/components/MileageChart';
  * Requirements: 7.2, 7.5
  */
 export default function DashboardClient() {
-  const [activeTab, setActiveTab] = useState<'expenses' | 'refills' | 'trips' | 'charts'>('expenses');
+  const [activeTab, setActiveTab] = useState<'expenses' | 'refills' | 'trips'>('expenses');
   const [refreshKey, setRefreshKey] = useState(0);
 
   /**
    * Handles tab change
    */
-  const handleTabChange = (tab: 'expenses' | 'refills' | 'trips' | 'charts') => {
+  const handleTabChange = (tab: 'expenses' | 'refills' | 'trips') => {
     setActiveTab(tab);
   };
 
@@ -93,18 +92,7 @@ export default function DashboardClient() {
                 Trips
               </button>
             </li>
-            <li className="nav-item" role="presentation">
-              <button
-                className={`nav-link ${activeTab === 'charts' ? 'active' : ''}`}
-                onClick={() => handleTabChange('charts')}
-                type="button"
-                role="tab"
-                aria-selected={activeTab === 'charts'}
-              >
-                <i className="bi bi-graph-up me-2"></i>
-                Charts
-              </button>
-            </li>
+            {/* Charts tab removed - no longer used */}
           </ul>
 
           {/* Tab Content - Requirement 7.5 (responsive layout) */}
@@ -151,30 +139,7 @@ export default function DashboardClient() {
               </div>
             )}
 
-            {/* Charts Tab */}
-            {activeTab === 'charts' && (
-              <div className="tab-pane fade show active" role="tabpanel">
-                <div className="row g-4">
-                  <div className="col-12">
-                    <MileageChart key={`chart-${refreshKey}`} onRefresh={handleRefresh} />
-                  </div>
-                </div>
-                <div className="row g-4 mt-2">
-                  <div className="col-12">
-                    <div className="alert alert-info" role="alert">
-                      <h5 className="alert-heading">
-                        <i className="bi bi-info-circle me-2"></i>
-                        About Mileage Charts
-                      </h5>
-                      <p className="mb-0">
-                        This chart shows your cumulative distance traveled over time based on recorded trips.
-                        Add more trips to see your mileage trends!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Charts content removed */}
           </div>
         </div>
       </div>
