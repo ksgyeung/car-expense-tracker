@@ -154,6 +154,14 @@ export default function RefillList({ onRefresh }: RefillListProps) {
   };
 
   /**
+   * Formats liters for display
+   */
+  const formatLiters = (liters: number | undefined): string => {
+    if (liters === undefined || liters === null) return 'N/A';
+    return `${liters.toFixed(2)} L`;
+  };
+
+  /**
    * Formats efficiency for display
    * Requirement 3.4: Display efficiency metrics
    */
@@ -240,6 +248,7 @@ export default function RefillList({ onRefresh }: RefillListProps) {
               <tr>
                 <th>Date</th>
                 <th>Amount Spent</th>
+                <th>Liters</th>
                 <th>Distance</th>
                 <th>Efficiency</th>
                 <th>Notes</th>
@@ -251,7 +260,7 @@ export default function RefillList({ onRefresh }: RefillListProps) {
                 <tr key={refill.id}>
                   {editingRefillId === refill.id ? (
                     // Edit mode - show form inline
-                    <td colSpan={6}>
+                    <td colSpan={7}>
                       <RefillForm
                         refill={refill}
                         onSuccess={handleUpdateSuccess}
@@ -265,6 +274,7 @@ export default function RefillList({ onRefresh }: RefillListProps) {
                       <td>
                         <strong>{formatAmount(refill.amountSpent)}</strong>
                       </td>
+                      <td>{formatLiters(refill.liters)}</td>
                       <td>{formatDistance(refill.distanceTraveled)}</td>
                       <td>
                         <span className="badge bg-info text-dark">
