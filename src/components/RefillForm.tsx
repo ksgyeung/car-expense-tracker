@@ -286,7 +286,7 @@ export default function RefillForm({ refill, onSuccess, onCancel }: RefillFormPr
 
           {/* Distance Traveled Field (either direct distance OR start/end odometer readings) */}
           <div className="mb-3">
-            <label className="form-label">
+            <label htmlFor="refill-distance" className="form-label">
               Distance Traveled <span className="text-danger">*</span>
             </label>
 

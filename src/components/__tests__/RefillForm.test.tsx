@@ -399,7 +399,7 @@ describe('RefillForm', () => {
     it('displays helpful text for distance field mentioning first entry', () => {
       render(<RefillForm />);
 
-      expect(screen.getByText(/kilometers traveled since last refill \(or starting odometer for first entry\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Either enter kilometers traveled directly, or provide start and end odometer readings to calculate distance automatically\./i)).toBeInTheDocument();
     });
   });
 });

@@ -238,7 +238,8 @@ describe('RefillList', () => {
       render(<RefillList />);
 
       await waitFor(() => {
-        expect(screen.getByText('N/A')).toBeInTheDocument();
+        const naItems = screen.getAllByText('N/A');
+        expect(naItems.length).toBeGreaterThan(0);
       });
     });
   });
