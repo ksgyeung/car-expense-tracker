@@ -17,7 +17,6 @@ let db: Database.Database | null = null;
 export function getDatabase(): Database.Database {
   if (!db) {
     db = new Database(DB_PATH);
-    db.pragma('journal_mode = WAL'); // Enable Write-Ahead Logging for better performance
     initializeSchema();
   }
   return db;
