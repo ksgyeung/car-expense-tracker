@@ -1,8 +1,6 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: car-expense-tracker:latest
     ports:
       - "3000:3000"
     environment:
@@ -15,7 +13,7 @@ services:
       
       # Base Path Configuration (optional)
       # Uncomment and set if deploying under a subpath (e.g., /car-tracker)
-      # - NEXT_PUBLIC_BASE_PATH=${NEXT_PUBLIC_BASE_PATH:-}
+      - NEXT_PUBLIC_BASE_PATH=/car-expense-tracker
       
       # Database Configuration
       - DB_PATH=/app/data/car-expense-tracker.db
@@ -27,7 +25,7 @@ services:
       - ./data:/app/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/car-expense-tracker/login', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
       interval: 30s
       timeout: 10s
       retries: 3
